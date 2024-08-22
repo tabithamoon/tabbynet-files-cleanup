@@ -11,6 +11,9 @@ export default {
 
 		// Iterate on bucket contents
 		for (const file of files.objects) {
+			// Skip file if expiry is null
+			if (file.customMetadata.expiry == "null") continue;
+
 			const expiry = new Date(file.customMetadata.expiry);	// Get expiry date
 			const now = new Date();									// Get current time
 
