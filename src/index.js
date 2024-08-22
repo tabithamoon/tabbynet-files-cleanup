@@ -1,15 +1,28 @@
-/**
- * Welcome to Cloudflare Workers! This is your first worker.
- *
- * - Run `npm run dev` in your terminal to start a development server
- * - Open a browser tab at http://localhost:8787/ to see your worker in action
- * - Run `npm run deploy` to publish your worker
- *
- * Learn more at https://developers.cloudflare.com/workers/
- */
-
 export default {
-	async fetch(request, env, ctx) {
-		return new Response('Hello World!');
+	async scheduled(event, env, ctx) {
+		// Variables
+		const bucket = env.MAIN_BUCKET;		// R2 bucket binding
+		let deleteList = [];				// List of object keys for deletion
+
+		// List bucket files
+		const files = await bucket.list({
+			include: ['customMetadata']
+		});
+
+		// Iterate on bucket contents
+		for (const file of files.objects) {
+			const expiry = new Date(file.customMetadata.expiry);	// Get expiry date
+			const now = new Date();									// Get current time
+
+			// If current time is after the expiry date...
+			if (now > expiry) {
+				// ..add the file to array
+				deleteList.push(file.key);
+			}
+		}
+
+		// Delete files
+		if (deleteList.length > 0) await bucket.delete(deleteList);
+		console.log(`Files deleted: ${ deleteList.join(", ") }`);
 	},
 };
