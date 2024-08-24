@@ -14,7 +14,7 @@ export default {
 			// Skip file if expiry is null
 			if (file.customMetadata.expiryDate == "null") continue;
 
-			const expiry = new Date(file.customMetadata.expiryDate);	// Get expiry date
+			const expiry = new Date(+file.customMetadata.expiryDate);	// Get expiry date
 			const now = new Date();									// Get current time
 
 			// If current time is after the expiry date...
